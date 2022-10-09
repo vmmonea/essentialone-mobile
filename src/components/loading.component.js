@@ -17,7 +17,8 @@ const style = {
     width: "100%",
     height: "100%",
     display: "flex",
+    zIndex: 100,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(240, 248, 254, 1)"
+    backgroundColor: "rgba(240, 248, 254, 0.6)"
 }

@@ -8,7 +8,6 @@ import LoadingComponent from "../../../components/loading.component";
 
 import api from '../../../services/api';
 
-
 const Label = ({ text }) => {
     return (
         <Text style={styles.label}>
@@ -49,7 +48,7 @@ export default function AllOrders({ navigation }) {
         try {
             const { data } = await api.get('/orders?page=1', {
                 headers: {
-                    auth: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uIjoiNzgxYzJkNjAtNDczZS0xMWVkLTgwMDAtMDA1MDU2ODU4MjUwIiwiY29tcGFueUlkIjoiMyIsInVybCI6Imh0dHBzOi8vaGFuYWRiZGV2LmIxY2xvdWQuY29tLmJyOjUwMDAwL2Ixcy92MS8iLCJpYXQiOjE2NjUyNTY5MTgsImV4cCI6MTY2NTYwMjUxOH0.k12iVcpoH3D80L5ALAl_co8vUwfIAFUk-FHehk1oHy8',
+                    auth: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uIjoiM2U2YjEzZDItNDc1My0xMWVkLTgwMDAtMDA1MDU2ODU4MjUwIiwiY29tcGFueUlkIjoiMyIsInVybCI6Imh0dHBzOi8vaGFuYWRiZGV2LmIxY2xvdWQuY29tLmJyOjUwMDAwL2Ixcy92MS8iLCJpYXQiOjE2NjUyNjU4NDAsImV4cCI6MTY2NTYxMTQ0MH0.ZOkNOjj_JugtCIchB0Qu2Xg3nc8FJMT0JcVgIQCdYN8',
                     'x-api-key': 'zq6pl6e36F7r05EkZQMuB7ExnHKI2BHl7pFlf5bn'
                 }
             });
@@ -78,34 +77,16 @@ export default function AllOrders({ navigation }) {
                 style={styles.scroll}
                 contentContainerStyle={styles.contentScroll}
             >
-                {/* <View style={styles.card}>
-                        <View style={styles.cardColumn}>
-                            <TouchableOpacity
-                                style={styles.showButton}
-                            >
-                                <Text style={styles.showButtonText}>{'>'}</Text>
-                            </TouchableOpacity>
-                        </View>
-                        <View style={styles.cardColumn}>
-                            <Text style={styles.label}>Pedido</Text>
-                            <Text style={styles.label}>Data Venda</Text>
-                            <Text style={styles.label}>Total</Text>
-                            <Text style={styles.label}>Ações</Text>
-                        </View>
-                        <View style={{...styles.cardColumn, width: '50%'}}>
-                            <Text style={styles.value}>{`${orders[0].DocEntry} ${orders[0].CardName}`}</Text>
-                            <Text style={styles.value}>{`${moment(orders[0].DocDate).format('DD/MM/YYYY')}`}</Text>
-                            <Text style={styles.value}>{`R$ ${orders[0].DocTotal}`}</Text>
-                            <Text style={styles.value}>Editar</Text>
-                        </View>
-                    </View> */}
                 {
                     orders.map((item, index) => {
                         return (
                             <View style={styles.card}>
                                 <TouchableOpacity
                                     style={styles.showButton}
-                                    onPress={() => setViewing(index)}
+                                    onPress={() => {
+                                        if (index === viewing) return setViewing(-1)
+                                        setViewing(index)
+                                    }}
                                 >
                                     {
                                         viewing === index
@@ -157,7 +138,10 @@ export default function AllOrders({ navigation }) {
             </ScrollView>
 
 
-            <TouchableOpacity style={styles.footer}>
+            <TouchableOpacity
+                style={styles.footer}
+                onPress={() => navigation.navigate('CreateOrders')}
+            >
                 <Text style={styles.buttonText}>+</Text>
             </TouchableOpacity>
 
@@ -238,8 +222,8 @@ const styles = StyleSheet.create({
         bottom: 20,
         right: 20,
         backgroundColor: '#4F6FF5',
-        height: 58,
-        width: 58,
+        height: 48,
+        width: 48,
         borderRadius: 20,
         display: 'flex',
         justifyContent: 'center',

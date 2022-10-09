@@ -1,107 +1,159 @@
 import moment from "moment/moment";
 import { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Platform } from "react-native";
 import { Table, Row, Rows } from 'react-native-table-component';
 import Icon from "react-native-vector-icons/AntDesign";
 
-import api from '../../../services/api';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import ClientModalComponent from "../../../components/client.component";
+import BranchsModalComponent from "../../../components/branchs.component";
 
+export default function CreateOrders() {
 
-const Label = ({ text }) => {
-    return (
-        <Text style={styles.itemLabel}>
-            {text}
-        </Text>
-    )
-}
+    const [Branch, setBranch] = useState({
+        name: 'Selecione uma',
+        code: ''
+    })
 
-const Value = ({ text }) => {
-    return (
-        <Text style={styles.itemValue}>
-            {text}
-        </Text>
-    )
-}
+    const [Card, setCard] = useState({
+        name: 'Selecione um',
+        code: ''
+    })
 
-export default function SpecifyOrders({ route }) {
+    const [DocDate, setDocDate] = useState(moment())
+    const [DocDueDate, setDocDueDate] = useState(moment())
 
-    const id = route.params.id;
-    console.log(route)
+    const [editingDate, setEditingDate] = useState(null)
+    const [modalVisible, setModalVisible] = useState(false);
+    const [branchVisible, setBranchVisible] = useState(true);
 
-    const [order, setOrder] = useState(null);
-    const [lines, setLines] = useState([])
-    const [viewing, setViewing] = useState(-1)
+    const [DocumentLines, setDocumentLines] = useState([])
 
-    async function getOrder(id) {
-        try {
+    const handleChangeDate = (event) => {
+        console.log(event)
 
-            const prepare = [];
+        if (event.type === 'dismissed') return setEditingDate(null)
 
-            const { data } = await api.get(`/orders/${id}`, {
-                headers: {
-                    auth: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uIjoiM2U2YjEzZDItNDc1My0xMWVkLTgwMDAtMDA1MDU2ODU4MjUwIiwiY29tcGFueUlkIjoiMyIsInVybCI6Imh0dHBzOi8vaGFuYWRiZGV2LmIxY2xvdWQuY29tLmJyOjUwMDAwL2Ixcy92MS8iLCJpYXQiOjE2NjUyNjU4NDAsImV4cCI6MTY2NTYxMTQ0MH0.ZOkNOjj_JugtCIchB0Qu2Xg3nc8FJMT0JcVgIQCdYN8',
-                    'x-api-key': 'zq6pl6e36F7r05EkZQMuB7ExnHKI2BHl7pFlf5bn'
-                }
-            });
-            console.log(data)
+        setEditingDate(null)
 
-            data.DocumentLines.map((item) => {
-                prepare.push([item.ItemCode, item.Quantity, `R$ ${item.Price}`, `R$ ${item.LineTotal}`])
-            })
+        if (editingDate === 'DocDate') setDocDate(moment(event.nativeEvent.timestamp))
+        if (editingDate === 'DocDueDate') setDocDueDate(moment(event.nativeEvent.timestamp))
 
-            setLines(prepare)
-            setOrder(data)
+        console.log(DocDate)
 
-
-
-        } catch (error) {
-            console.log(error);
-            console.log(error.request)
-        }
     }
-
-    useEffect(() => {
-        getOrder(id)
-    }, [id])
 
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
             {
-                order &&
+                <ClientModalComponent
+                    onSelect={setCard}
+                    onClose={() => setModalVisible(false)}
+                    visible={modalVisible}
+                />
+
+            }
+            {
+                <BranchsModalComponent
+                    onSelect={setBranch}
+                    onClose={() => setBranchVisible(false)}
+                    visible={branchVisible}
+                />
+            }
+            {
+                Platform.OS === 'android' && editingDate !== null &&
+                <DateTimePicker
+                    style={{ width: '100%' }}
+                    value={new Date(DocDate)}
+                    onChange={handleChangeDate}
+                    mode='date'
+                    display='default'
+                />
+
+            }
+            {
                 <>
                     <View style={styles.card}>
-                        <View style={{ marginBottom: 25 }}>
-                            <Text style={styles.value}>{order.BPLName}</Text>
+                        <TouchableOpacity
+                            style={{ marginBottom: 25 }}
+                            onPress={() => setBranchVisible(true)}
+
+                        >
+                            <View style={styles.select}>
+                                <Text style={styles.value}>{Branch.name}</Text>
+                                <Icon name="edit" size={24} />
+                            </View>
                             <Text style={styles.label}>Filial</Text>
-                        </View>
+                        </TouchableOpacity>
                         <View style={styles.header}>
                             <Icon name="user" size={44} color="#4D5767" />
-                            <View style={{ marginLeft: 15 }}>
-                                <Text style={styles.value}>{order.CardName}</Text>
-                                <Text style={styles.label}>{order.CardCode}</Text>
-                            </View>
+                            <TouchableOpacity
+                                style={{ marginLeft: 15 }}
+                                onPress={() => setModalVisible(true)}
+                            >
+                                <View style={styles.select}>
+                                    <Text style={styles.value}>{Card.name}</Text>
+                                    <Icon name="edit" size={24} />
+                                </View>
+                                <Text style={styles.label}>{Card.code}</Text>
+                            </TouchableOpacity>
                         </View>
                         <View style={styles.content}>
-                            <View>
-                                <Text style={styles.value}>{moment(order.DocDate).format('DD/MM/YYYY')}</Text>
+                            <TouchableOpacity
+                                onPress={() => setEditingDate('DocDate')}
+                            >
+                                <View style={styles.select}>
+                                    {
+                                        Platform.OS === 'ios' ?
+                                            <DateTimePicker
+                                                style={{ width: '50%' }}
+                                                value={new Date(DocDate)}
+                                                mode='date'
+                                                display='default'
+                                            />
+                                            :
+                                            <>
+                                                <Text style={styles.value}>{moment(DocDate).format('DD/MM/YYYY')}</Text>
+                                                <Icon name="edit" size={24} />
+                                            </>
+                                    }
+                                </View >
                                 <Text style={styles.label}>Data de Lançamento</Text>
-                            </View>
-                            <View>
-                                <Text style={styles.value}>{moment(order.DocDueDate).format('DD/MM/YYYY')}</Text>
+                            </TouchableOpacity >
+                            <TouchableOpacity
+                                onPress={() => setEditingDate('DocDueDate')}
+                            >
+                                <View style={styles.select}>
+                                    {
+                                        Platform.OS === 'ios' ?
+                                            <DateTimePicker
+                                                style={{ width: '50%' }}
+                                                value={new Date(DocDueDate)}
+                                                mode='date'
+                                                display='default'
+                                            />
+                                            :
+                                            <>
+                                                <Text style={styles.value}>{moment(DocDueDate).format('DD/MM/YYYY')}</Text>
+                                                <Icon name="edit" size={24} />
+                                            </>
+                                    }
+
+                                </View>
                                 <Text style={styles.label}>Data de Entrega</Text>
-                            </View>
-                        </View>
+                            </TouchableOpacity>
+                        </View >
                         <View style={styles.footer}>
                             <View>
-                                <Text style={styles.value}>{`R$ ${order.DocTotal}`}</Text>
+                                <Text style={styles.value}>{`R$ 0`}</Text>
                                 <Text style={styles.label}>Total do Documento</Text>
                             </View>
                         </View>
-                    </View>
+                    </View >
                     <View style={styles.items}>
                         <Text style={styles.value}>Linhas</Text>
                         {
-                            order.DocumentLines.map((item, index) => {
+                            DocumentLines.map((item, index) => {
                                 return (
                                     <View style={styles.item}>
                                         <TouchableOpacity
@@ -162,9 +214,10 @@ export default function SpecifyOrders({ route }) {
                 </>
             }
 
-        </ScrollView>
+        </ScrollView >
     )
 }
+
 
 const styles = StyleSheet.create({
     container: {
@@ -194,10 +247,16 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         marginVertical: 15,
     },
+    select: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
     value: {
         color: '#4D5767',
         fontWeight: 'bold',
         fontSize: 22,
+        marginRight: 5
     },
     label: {
         color: '#4D5767',
